@@ -34,3 +34,7 @@ def fill_miss_rf(x,y,to_fill):
     ypre = rfr.predict(xtest)
     
     return ypre
+ 
+ #应用
+ y_pre = fill_miss_rf(x,y,"employmentLength")
+ train_data.loc[train_data.loc[:,"employmentLength"].isnull(),"employmentLength"] = y_pre#覆盖
