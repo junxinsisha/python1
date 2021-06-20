@@ -7,3 +7,30 @@ df.dropna(thresh = 4)#保留至少有4个缺失值的行
 df.dropna(subset = [‘C’])#删除含有缺失值的特定的列
 dddf = ddf.dropna(subset=[‘jie_num’],axis=0)#删除含有缺失值的特定的行
 datanota = AData[AData[‘marital’].notna()]#删除某列中含有缺失值的行
+
+
+#针对某一列做随机森林填补缺失值
+def fill_miss_rf(x,y,to_fill):
+    '''
+    使用随机森林填补一个特征的缺失值的函数
+    
+    参数
+    x:要填补的特征矩阵
+    y;完整的，没有缺失值的标签
+    to_fill:字符串，要填补的那一列的名称
+    '''
+    df = x.copy()
+    fill = df.loc[:,to_fill]
+    df = pd.concat([df.loc[:,df.columns != to_fill],pd.DataFrame(y)],axis=1)
+    
+    ytrain = fill[fill.notnull()]
+    ytest = fill[fill.isnull()]
+    xtrain = df.iloc[ytrain.index,:]
+    xtest = df.iloc[ytest.index,:]
+    
+    #用随机森林回归填补缺失值
+    from sklearn.ensemble import RandomForestRegressor as rfr
+    rfr = rfr(n_estimators=100).fit(xtrain,ytrain)
+    ypre = rfr.predict(xtest)
+    
+    return ypre
