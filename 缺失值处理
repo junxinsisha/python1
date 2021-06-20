@@ -1,0 +1,9 @@
+df.isnull()#是缺失值返回True，否则范围False
+df.isnull().sum()#返回每列包含的缺失值的个数
+df.dropna()#直接删除含有缺失值的行
+df.dropna(axis = 1)#直接删除含有缺失值的列
+df.dropna(how = ‘all’)#只删除全是缺失值的行
+df.dropna(thresh = 4)#保留至少有4个缺失值的行
+df.dropna(subset = [‘C’])#删除含有缺失值的特定的列
+dddf = ddf.dropna(subset=[‘jie_num’],axis=0)#删除含有缺失值的特定的行
+datanota = AData[AData[‘marital’].notna()]#删除某列中含有缺失值的行
