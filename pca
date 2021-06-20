@@ -1,0 +1,23 @@
+#PCA语法
+import matplotlib.pyplot as plt#画图工具
+from mpl_toolkits.mplot3d import Axes3D
+from sklearn import datasets
+from sklearn.datasets import load_iris
+from sklearn.decomposition import PCA
+import pandas as pd
+import numpy as np
+import seaborn as sns
+iris=load_iris()
+X=iris.data
+y=iris.target
+pca = PCA(n_components=2)#实例化
+X_p =pca.fit(X).transform(X)#拟合模型，获取新矩阵
+#可视化
+ax = plt.figure()
+for c, i, target_name in zip("rgb", [0, 1, 2], iris.target_names):
+    plt.scatter(X_p[y == i, 0], X_p[y == i, 1], c=c, label=target_name) #取出y=0,1，2的坐标
+plt.xlabel('Dimension1')
+plt.ylabel('Dimension2')
+plt.title("Iris")
+plt.legend()
+plt.show()
