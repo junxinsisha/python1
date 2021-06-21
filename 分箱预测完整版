@@ -1,0 +1,225 @@
+import numpy as np
+import pandas as pd
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
+from sklearn.feature_selection import VarianceThreshold
+
+model_data = pd.read_csv('C:/Users/Dell/Desktop/郑佳重要/python/天池金融/model_data.csv')
+vali_data = pd.read_csv('C:/Users/Dell/Desktop/郑佳重要/python/天池金融/vali_data.csv')
+test_data = pd.read_csv('C:/Users/Dell/Desktop/郑佳重要/python/天池金融/testB.csv')
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import scipy
+
+def graphforbestbin(DF,X,Y,n=5,q=20,graph=True):
+    """
+    自动最优分箱函数，基于卡方检验的分箱
+
+    参数：
+    DF：需要输入的数据
+    X：需要分箱的列名
+    Y：分箱数据对应的标签Y列名
+    n:保留分箱个数
+    q:初始分箱的格式
+    graph:是否画出iv图像
+
+    区间为前开后闭（]
+
+    """
+    DF = DF[[X,Y]].copy()
+    
+    DF["qcut"],bins = pd.qcut(DF[X], retbins=True, q=q, duplicates="drop")
+    coount_y0 = DF.loc[DF[Y]==0].groupby(by="qcut").count()[Y]
+    coount_y1 = DF.loc[DF[Y]==1].groupby(by="qcut").count()[Y]
+    num_bins = [*zip(bins,bins[1:],coount_y0,coount_y1)]
+    
+    for i in range(q):
+        if 0 in num_bins[0][2:]:
+            num_bins[0:2] = [(
+                num_bins[0][0],
+                num_bins[1][1],
+                num_bins[0][2]+num_bins[1][2],
+                num_bins[0][3]+num_bins[1][3])]
+            continue
+            
+        for i in range(len(num_bins)):
+            if 0 in num_bins[i][2:]:
+                num_bins[i-1:i+1] = [(
+                    num_bins[i-1][0],
+                    num_bins[i][1],
+                    num_bins[i-1][2]+num_bins[i][2],
+                    num_bins[i-1][3]+num_bins[i][3])]
+                break
+        else:
+            break
+            
+    def get_woe(num_bins):
+        columns = ["min","max","coount_0","coount_1"]
+        df = pd.DataFrame(num_bins,columns=columns)
+        df["total"]=df.coount_0+df.coount_1
+        df["percentage"]=df.total/df.total.sum()
+        df["bad_rate"]=df.coount_1/df.total
+        df["good%"]=df.coount_0/df.coount_0.sum()
+        df["bad%"]=df.coount_1/df.coount_1.sum()
+        df["woe"]=np.log(df["good%"]/df["bad%"])
+        return df
+    
+    def get_iv(df):
+        rate = df["good%"] - df["bad%"]
+        iv = np.sum(rate * df.woe)
+        return iv
+    
+    iv = []
+    axisx = []
+    while len(num_bins) > n:
+        pvs = []
+        #获取num_bins_两两之间的卡方检验的置信度（或卡方值）
+        for i in range(len(num_bins)-1):
+            x1 = num_bins[i][2:]
+            x2 = num_bins[i+1][2:]
+            #0返回chi2值，1返回p值
+            pv = scipy.stats.chi2_contingency([x1,x2])[1]
+            #chi2=scipy.stats.chi2_contingency([x1,x2])[0]
+            pvs.append(pv)
+
+        #通过p值进行处理，合并p值最大的两组
+        i = pvs.index(max(pvs))
+        num_bins[i:i+2] = [(
+            num_bins[i][0],
+            num_bins[i+1][1],
+            num_bins[i][2]+num_bins[i+1][2],
+            num_bins[i][3]+num_bins[i+1][3])]
+   
+
+        bins_df = pd.DataFrame(get_woe(num_bins))
+        axisx.append(len(num_bins))
+        iv.append(get_iv(bins_df))
+ 
+    if graph:    
+        plt.figure()
+        plt.plot(axisx,iv)
+        plt.xticks(axisx)
+        plt.xlabel("number of box")
+        plt.ylabel("iv")
+        plt.show()
+    return bins_df
+    
+for i in model_data.columns[27:-1]:
+    print(i)
+graphforbestbin(model_data,i,"isDefault",n=2,q=20,graph=True)
+    
+#可以分箱的放在这里，后面的数字为之前得到的最优箱子数
+auto_col_bins = {"loanAmnt":6,
+                 "interestRate":6,
+                 "installment":8,
+                 "employmentTitle":7,
+                 "annualIncome":7,
+                 "issueDate":8,
+                 "dti":6,
+                 "delinquency_2years":3,
+                 "ficoRangeLow":7,
+                 "ficoRangeHigh":7,
+                 "openAcc":9,
+                 "revolBal":4,
+                 "revolUtil":4,
+                 "totalAcc":11,
+                 "earliesCreditLine":8,
+                 "title":5,
+                 "n0":3,
+                 "n1":6,
+                 "n2":4,
+                 "n3":4,
+                 "n4":6,
+                 "n5":8,
+                 "n6":8,
+                 "n7":7,
+                 "n8":9,
+                 "n9":4,
+                 "n10":7,
+                 "n14":5
+                }
+
+#不可以分箱的放在这里面
+hand_bins = {
+             "grade":[1,2,3,4,5,6,7],
+             "homeOwnership":[0,1,2,3,4,5],
+             "verificationStatus":[0,1,2],
+             "initialListStatus":[0,1],
+             "applicationType":[0,1],
+    
+}
+
+#左右极限变成无穷，以便映射
+hand_bins = {k:[-np.inf,*v[:-1],np.inf]for k,v in hand_bins.items()}
+
+#计算woe的函数
+def get_woe(df,col,y,bins):
+    df = df[[col,y]].copy()
+    df["cut"] = pd.cut(df[col],bins)
+    bins_df = df.groupby("cut")[y].value_counts().unstack()
+    woe = bins_df["woe"] = np.log((bins_df[0]/bins_df[0].sum())/(bins_df[1]/bins_df[1].sum()))
+    return woe
+    
+#将所有woe存储到字典
+
+woeall = {}
+for col in bins_of_col:
+    woeall[col] = get_woe(model_data,col,"isDefault",bins_of_col[col])
+    
+model_woe = pd.DataFrame(index=model_data.index)
+
+for col in bins_of_col:
+    model_woe[col] = pd.cut(model_data[col],bins_of_col[col]).map(woeall[col])
+
+#剩余标签放进去
+for col in [ 'isDefault', 'term', 'grade', 'employmentLength','purpose','pubRec', 'pubRecBankruptcies',  'n13']:
+    model_woe[col] = model_data[col]
+    
+#得到分箱后的数据集model_woe,之前的数据集为model_data
+ 
+#处理测试集
+
+vali_woe = pd.DataFrame(index=vali_data.index)
+
+for col in bins_of_col:
+    vali_woe[col] = pd.cut(vali_data[col],bins_of_col[col]).map(woeall[col])
+    
+for col in [ 'isDefault', 'term', 'grade', 'employmentLength','purpose','pubRec', 'pubRecBankruptcies',  'n13']:
+    vali_woe[col] = vali_data[col]
+    
+vali_x = vali_woe.drop(["isDefault"],axis=1)
+vali_y = vali_woe["isDefault"]
+
+#训练集
+x = model_woe.drop(["isDefault"],axis=1)
+y = model_woe["isDefault"]
+
+#然后就可以用逻辑回归，xgboost等分类了
+#我用的是xgboost
+
+x_copy = x.copy()
+vali_x_copy = vali_x.copy()
+
+#需要将category变成float64
+for col in bins_of_col:
+    vali_x_copy[[col]] = vali_x_copy[[col]].astype('float64')
+    x_copy[[col]] = x_copy[[col]].astype('float64')
+    
+import xgboost
+from xgboost import XGBClassifier
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import cross_val_score as CVS
+
+clf = XGBClassifier().fit(x_copy,y)
+CVS(clf,x_copy,y,cv=2)
+clf.score(vali_x_copy,vali_y)
+
+#说实话，我感觉这个正确率还挺高的,能达到86%，可能也跟我之前用随机森林处理缺失值有关系
+#但是用这个模型去testA预测，结果AUC很低
+    
+
+
