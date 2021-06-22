@@ -1,0 +1,9 @@
+numpy中reshape函数的三种常见相关用法
+
+reshape(1,-1)转化成1行：
+
+reshape(2,-1)转换成两行：
+
+reshape(-1,1)转换成1列：
+
+reshape(-1,2)转化成两列
