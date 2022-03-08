@@ -1,0 +1,271 @@
+《数据结构：python语言描述》上机实验1.5
+基础实验1分析算法的时间和空间复杂度
+
+
+实验目的：考察是否能够正确地理解算法的时间和空间复杂度的概念，并计算出下列给定算法的时间和空间复杂度。
+ 
+时间复杂度是指执行当前算法消耗的时间，在时间复杂度中，我们主要采取事前分析估算法来分析算法的时间性能。
+
+ 
+（1）算法中无循环。时间复杂度为O(1)，称为常量阶。
+
+（2）一个单重循环，O(n)，称为线性阶。
+
+（3）双重循环，O(n^2)，称为平方阶。
+
+
+
+空间复杂度，是指执行当前算法需要占用多少内存，在对算法的空间复杂度进行研究时，只分析临时变量所占有的存储空间，不用考虑形参占用的存储空间。
+
+ 
+
+ 
+import time
+def Fun1():
+    i=0
+    print("hello world")
+ 
+t=time.time()
+Fun1()
+print(f'coast:{time.time() - t:.4f}s')#运行结束的时间-运行开始的时间
+算法中无循环，时间复杂度为O(1)，空间复杂度O(1)
+
+ 
+def Fun2(n):
+    k = 0
+    for i in range(0,n):
+        k += i
+    return k
+单重循环，计算1+...+n，时间复杂度为O(n)，空间复杂度O(1)
+
+def function(n):
+    k=0
+    for i in range(1,n):
+        for j in range(1,i+1):
+            k=i*j
+            print(i,"*",j,"=",k)
+        print()
+双重循环，计算n*n乘法表，时间复杂度O(n^2)，空间复杂度O(1)
+
+基础实验2设计算法并讨论其时间复杂度
+
+1.实现无循环的方法
+
+（1）简单编写一个输出自己姓名和学号的语句
+
+def fun():
+    print("姓名：君心，学号：008")
+（2）计算该方法时间复杂度：O(1)
+
+2.实现单重循环求解正整数1-n和，跟上面一样
+
+3.实现双重循环的方法，输出九九乘法表
+
+ 
+function(10)
+5.2综合实验
+
+多种方式求1-n的和
+
+（1）逐个累加
+
+（2）使用公式n(n+1)/2
+
+ 
+
+def Fun2(n):
+    k = 0
+    for i in range(0,n):
+        k += i
+    return k
+ 
+Fun2(100)
+
+
+ 
+def Fun3(n):
+    sum1 = n*(n-1)/2
+    print(sum1)
+ 
+Fun3(100)
+
+
+综合实验2 多种方式求素数
+
+判断这个数是否为素数
+
+（1）将n对2,3，..n-1逐个取模，结果不为0，则n为素数
+
+ 
+def Fun4(n):
+    for i in range(2,n-1):
+        if n%i==0:
+            print(n,"不是素数")
+            break
+    else:
+            print(n,"是素数")
+Fun4(17)
+（2）对2,3，....n/2逐个取模
+
+ 
+def Fun5(n):
+    m=n//2+1
+    for i in range(2,m):
+        if n%i==0:
+            print(n,"不是素数")
+            break
+    else:
+            print(n,"是素数")
+（3）对1,2 。。。 根号n逐个取模
+
+ 
+import math
+def Fun6(n):
+    m=int(math.sqrt(n))+1
+    for i in range(2,m):
+        if n%i==0:
+            print(n,"不是素数")
+            break
+    else:
+            print(n,"是素数")
+这个算法比较简单，在我的笔记本上时间差距不是很明显。
+
+ 
+
+习题
+
+一选择题
+
+1D数据元素可由若干个数据项（data item）组成，数据项是数据的不可分割的最小单位。
+
+2B计算机所处理的数据一般具有某种内在联系,这是指元素与元素之间存在某种关系
+
+3C数据的逻辑结构分两大类: 1线性结构。2非线性结构。 
+
+数据的存储方法有四种: 1顺序存储方法 。2链接存储方法 。3索引存储方法。4散列存储方法 。
+
+4B算法是为解决某一问题编写的程序
+
+5C算法的时间复杂度取决于问题的规模、待处理数据的初态。
+
+二填空题
+
+1、数据项是数据元素中不可分割的最小标识单位，通常不具备完整、确定的实际意义，只是反映数据元素某一方面的属性。
+
+2、数据的逻辑结构通常分为集合结构、线性结构、树状结构和网络结构。
+
+3、数据结构的存储方式有顺序存储方法、链接存储方法、索引存储方法和散列存储方法这四种。
+
+4、一个算法有5个特性，有输入，有输出，确定性，有穷性和有效性。
+
+5、在对算法的空间复杂度进行分析时，只需考虑临时变量所占用的存储空间不用考虑形参占用的存储空间。
+
+ 
+
+三编程题
+
+1、设计算法求解正整数n的阶乘
+
+ 
+def factorial(n):
+    if n - 1 > 0 :
+        return (factorial(n - 1) * n)#递归
+    else:
+        return 1
+factorial(4)
+2、已知序列1,2，3,5，8，求第20项的值
+
+ 
+def Fun7(n):
+    if n > 1:
+        return (Fun7(n-1)+Fun7(n-2))
+    else :
+        return 1
+Fun7(20)
+
+
+3、设计算法求解1！+2！+3！+...+n!的和
+
+ 
+def factorial(n):
+    if n - 1 > 0 :
+        return (factorial(n - 1) * n)#递归
+    else:
+        return 1
+    
+def Fun2(m):
+    k = 0
+    for i in range(1,m+1):
+        k = factorial(i)+k
+    return k
+4、设计算法求解1！+2！+3！+...+n!的和，要求使用双重循环，外循环控制循环次数，内循环求解每个数的阶乘。
+
+ 
+def Fun8(m):
+    k = 0
+    for i in range(1,m+1):
+        
+        def Fun9(n):
+            x = 1
+            for j in range(1,n+1):
+                x = x * j
+            return x
+        
+        k = Fun9(i)+k
+    return k
+5、设计算法求解1！+2！+3！+...+n!的和，要求仅使用单重循环控制循环的次数，同时计算当前数的阶乘。（和第3题一样）
+
+6、设计算法获取输入的n个数据中的最大值
+
+首先定义一组数和变量a，并赋值【a=list(0)】；然后用range循环查询，如果有数大于【list=(0)】，则传值给a并输出即可。
+
+ 
+def max2(list):
+ 
+    a = list[0]
+ 
+    for prime in range (1,len(list)):
+ 
+        if list[prime] > list[0]:
+ 
+            a = list[prime]
+ 
+    return a
+8、设计算法对于1-n的每一个整数n，输出log2n、根号n、n、等8个函数的值，并分析增长趋势（例如n=10）
+
+ 
+import numpy as np
+import matplotlib.pyplot as plt
+def f1(x):
+    return x #这里可更改函数
+ 
+def plot_f1():
+    x=np.linspace(1,10,10)
+    y1=f1(x)
+    
+    plt.plot(x,y1)
+    plt.grid()
+    plt.show()
+    
+plot_f1() #画图分析增长趋势
+for i in range(1,10):
+    print(f1(i)) #输出1-10对应的函数的值
+9、设计算法对输入的n个数据从小到大进行排序
+
+ 
+def min2(arr):
+    smallest = arr[0]      #找到最小值
+    smallest_index = 0     #存储最小元素的索引
+    for i in range(1,len(arr)):
+        if arr[i] < smallest:
+            smallest = arr[i]
+            smallest_index = i
+    return smallest_index
+ 
+def sort1(arr):   #对数组进行排序
+    newArr = []   #新数组
+    for i in range(len(arr)):
+        smallest = min2(arr)
+        newArr.append(arr.pop(smallest))   #删掉原数组中最小的元素，并将其加入到新数组中
+    return newArr
+ 
