@@ -1,0 +1,112 @@
+# -*- codeing = utf-8 -*-
+# @Time:2022/2/21 9:09
+# @Author:zheng
+# @File:决策树.py
+# @Software:PyCharm
+
+from sklearn import datasets
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
+from sklearn import tree
+from sklearn.datasets import load_wine
+import pandas as pd
+import math
+import numpy as np
+
+wine = pd.read_csv('C:/Users/Dell/Desktop/郑佳重要/不确定理论/决策树/boston.csv')
+# 统计其中的分类个数
+'''
+wine_x = wine.drop('target',axis=1)
+wine_y = wine['target']
+x_train, x_test, y_train, y_test = train_test_split(wine_x,wine_y,test_size=0.2)
+
+'''
+wine_train,wine_test = train_test_split(wine,test_size=0.2)
+wine_train = wine_train.reset_index(drop=True)
+wine_test = wine_test.reset_index(drop=True)
+
+def tongji(data):
+    class0 = 0
+    class1 = 0
+    class2 = 0
+    inn = []
+    for i in range(len(data)):
+        if data['target'][i] == 0:
+            class0 = class0 + 1
+        elif data['target'][i] == 1:
+            class1 = class1 + 1
+        elif data['target'][i] == 2:
+            class2 = class2 + 1
+    if class0 == 0:
+        k0 = 0
+    else:
+        k0 = -(class0 / len(data)) * math.log(class0 / len(data))
+
+    if class1 == 0:
+        k1 = 0
+    else:
+        k1 = -(class1 / len(data)) * math.log(class1 / len(data))
+
+    if class2 == 0:
+        k2 = 0
+    else:
+        k2 = -(class2 / len(data)) * math.log(class2 / len(data))
+    entropy = k0 + k1 + k2
+
+    return entropy
+
+
+def jisuanshang(feature, dataname):
+    for i in range(len(feature)):
+        j = feature[i]
+        # 将数据集按某特征分为两类
+
+        data3 = dataname[(feature < j)]
+        # 重新设置连续的索引
+        data3 = data3.reset_index(drop=True)
+        shang3 = tongji(data3)
+        entr = shang3
+        print(feature[i],entr)
+
+def tiaojianshang(fea,dataset):
+    df = pd.DataFrame()
+    for i in range(len(fea)):
+        j = fea[i]
+        # 将数据集按某特征分为两类
+        data4 = dataset[(fea >= j)]
+        data5 = dataset[(fea < j)]
+        # 重新设置连续的索引
+        data4 = data4.reset_index(drop=True)
+        data5 = data5.reset_index(drop=True)
+
+        shang4 = tongji(data4)
+        shang5 = tongji(data5)
+        tiaojianentr = (len(data4)/len(fea))*shang4+(len(data5)/len(fea)*shang5)
+        # 不考虑特征此时数据集的熵值为
+        x = tongji(dataset)
+        # 计算信息增益
+        gain = x - tiaojianentr
+
+        # 将for循环中得到的数值保存
+        df = df.append(pd.DataFrame({'index':[j],'gain': [gain]}), ignore_index=True)
+        # 取某列中的最大值
+        max1 = np.max(df['gain'])
+        df2 = df[df['gain'] == max1]
+    return df2
+
+
+
+def choosebest(dataset):
+    fea = ['alcohol', 'malic_acid', 'ash', 'alcalinity_of_ash', 'magnesium',
+           'total_phenols', 'flavanoids', 'nonflavanoid_phenols',
+           'proanthocyanins', 'color', 'hue', 'od280', 'proline']
+    df3 = pd.DataFrame()
+    df4 = pd.DataFrame()
+    for a in fea:
+        gain = tiaojianshang(dataset[a], dataset)
+
+        print(a,gain)
+
+
+
+print(choosebest(wine_train))
