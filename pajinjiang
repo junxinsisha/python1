@@ -1,0 +1,98 @@
+ 
+import urllib
+from bs4 import BeautifulSoup
+from io import BytesIO
+import urllib.request
+from urllib.request import urlopen
+import zlib
+import gzip
+import re
+import pandas as pd
+import numpy as np
+from lxml import etree
+from gzip import GzipFile
+ 
+def loadData(url):
+    request = urllib.request.Request(url)
+    request.add_header('Accept-encoding', 'gzip,deflate')
+    response = urlopen(request)
+    content = response.read()
+    encoding = response.info().get('Content-Encoding')
+    if encoding == 'gzip':
+        content = gzip1(content)
+    elif encoding == 'deflate':
+        content = deflate(content)
+    elif encoding == 'br':
+        content == br(content)
+    return content
+ 
+ 
+def gzip1(data):
+    buf = BytesIO(data)
+    f = gzip.GzipFile(fileobj=buf)
+    return f.read()
+ 
+ 
+def deflate(data):
+    try:
+        return zlib.decompress(data, -zlib.MAX_WBITS)
+    except zlib.error:
+        return zlib.decompress(data)
+ 
+import brotli
+ 
+ 
+def br(data):
+    data = brotli.decompress(data)
+import requests
+ 
+def main():
+    url = "https://www.jjwxc.net/topten.php?orderstr=7&t=0"
+    content = loadData(url)
+    html = content.decode("gb18030")
+ 
+ 
+    soup = BeautifulSoup(html, "html.parser")
+    tem = soup.select("html>body>table>tbody") #选取部分页面
+    #tem = soup.find_all('td', height="23")
+    findtxt = re.compile(r'<td height="23"> <a href=.*title="(.*?)".*</a>')  # 作者
+    findzuopin = re.compile(r'.*target="_blank" title="(.*?)"') #作品
+    findzishu = re.compile(r'<td align="right" height="23">(.*?) </td>') #字数
+    findfabiaoshijian = re.compile(r'<td align="center">(.*?)</td> </tr>') #发表时间
+    findleixing = re.compile(r'([\u4e00-\u9fa5][\u4e00-\u9fa5]-[\u4e00-\u9fa5].*?)</td>')  #类型
+    for item in tem:
+        data = [] #保存电影的所有信息
+        item = str(item)
+        zishu = re.findall(findzishu, item)#正则查找指定字符串
+        zuozhe = re.findall(findtxt, item)
+        zuopin = re.findall(findzuopin, item)
+        fabiaoshijian = re.findall(findfabiaoshijian, item)
+        leixing = re.findall(findleixing, item)
+        for i in range(200):
+            leixing[i] = leixing[i].strip() #去掉空格
+            fabiaoshijian[i] = fabiaoshijian[i][0:4] #截取年份
+ 
+        data.append(zuozhe)
+        data.append(zuopin)
+        a = [[0 for col in range(5)] for row in range(200)]
+ 
+        col = ["作者", "作品", "类型", "字数", "发表时间"]
+ 
+        for i in range(200):
+            a[i][0] = zuozhe[i]
+            a[i][1] = zuopin[i]
+            a[i][2] = leixing[i]
+            a[i][3] = zishu[i]
+            a[i][4] = fabiaoshijian[i]
+ 
+        a = pd.DataFrame(a)
+        a.columns = col
+ 
+        a.to_excel("C:path/晋江积分前200.xls")
+ 
+ 
+      
+ 
+if __name__ == '__main__':
+    main()
+ 
